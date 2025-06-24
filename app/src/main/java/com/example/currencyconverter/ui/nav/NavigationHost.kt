@@ -9,10 +9,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.currencyconverter.ui.screens.CurrenciesScreen
-import com.example.currencyconverter.ui.screens.ExchangeScreen
 import com.example.currencyconverter.ui.screens.TransactionsScreen
 import com.example.currencyconverter.ui.viewmodel.CurrenciesViewModel
-import com.example.currencyconverter.ui.viewmodel.ExchangeViewModel
 import com.example.currencyconverter.ui.viewmodel.TransactionsViewModel
 
 @Composable
@@ -20,6 +18,9 @@ fun NavigationHost(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
+    val currenciesViewModel: CurrenciesViewModel = hiltViewModel()
+    val transactionsViewModel: TransactionsViewModel = hiltViewModel()
+
     NavHost(
         navController = navController,
         startDestination = Screen.Currencies.route,
@@ -34,31 +35,7 @@ fun NavigationHost(
                 slideOutHorizontally { -1000 }
             }
         ) {
-            val currenciesViewModel: CurrenciesViewModel = hiltViewModel()
-            CurrenciesScreen(viewModel = currenciesViewModel, navController = navController)
-        }
-
-        composable(
-            route = "exchange/{from}/{to}/{amount}",
-            enterTransition = {
-                slideInHorizontally { 1000 }
-            },
-            exitTransition = {
-                slideOutHorizontally { 1000 }
-            }
-        ) { backStackEntry ->
-            val from = backStackEntry.arguments?.getString("from") ?: ""
-            val to = backStackEntry.arguments?.getString("to") ?: ""
-            val amount = backStackEntry.arguments?.getString("amount")?.toDoubleOrNull() ?: 0.0
-            val exchangeViewModel: ExchangeViewModel = hiltViewModel()
-
-            ExchangeScreen(
-                viewModel = exchangeViewModel,
-                navController = navController,
-                from = from,
-                to = to,
-                amount = amount
-            )
+            CurrenciesScreen(currenciesViewModel = currenciesViewModel, navController = navController)
         }
 
         composable(
@@ -70,8 +47,7 @@ fun NavigationHost(
                 slideOutHorizontally { -1000 }
             }
         ) {
-            val transactionsViewModel: TransactionsViewModel = hiltViewModel()
-            TransactionsScreen(viewModel = transactionsViewModel, navController = navController)
+            TransactionsScreen(transactionsViewModel = transactionsViewModel, navController = navController)
         }
     }
 }

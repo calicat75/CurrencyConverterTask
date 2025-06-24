@@ -17,18 +17,23 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import androidx.navigation.NavController
+import com.example.currencyconverter.ui.viewmodel.CurrenciesViewModel
 
 
 @Composable
-fun CurrencyConverterScreen() {
+fun CurrenciesScreen(
+    currenciesViewModel: CurrenciesViewModel,
+    navController: NavController
+) {
     val currencies = listOf(
         CurrencyItem("USD", "US Dollar", "$1.44", "$1.0000", R.drawable.us_flag),
         CurrencyItem("EUR", "Euro", "€2.50", "€0.9200", R.drawable.eu_flag),
         CurrencyItem("GBP", "British Pound", "£3.10", "£0.8100", R.drawable.uk_flag),
-        CurrencyItem("RUB", "Russian Ruble", "₽120.00", "₽89.5000", R.drawable.ru_flag),
+        CurrencyItem("RUB", "Russian Ruble", "₽75000.00", "₽89.5000", R.drawable.ru_flag),
         CurrencyItem("CNY", "Chinese Yuan", "¥18.90", "¥7.2000", R.drawable.cn_flag)
     )
 
