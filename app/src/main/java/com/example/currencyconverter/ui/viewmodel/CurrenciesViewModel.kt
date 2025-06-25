@@ -2,6 +2,7 @@ package com.example.currencyconverter.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.currencyconverter.data.dataSource.remote.RatesService
 import com.example.currencyconverter.data.dataSource.remote.RemoteRatesServiceImpl
 import com.example.currencyconverter.data.dataSource.remote.dto.RateDto
 import com.example.currencyconverter.data.dataSource.room.account.dao.AccountDao
@@ -16,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CurrenciesViewModel @Inject constructor(
-    private val remoteRatesService: RemoteRatesServiceImpl,
+    private val remoteRatesService: RatesService,
     private val accountDao: AccountDao
 ) : ViewModel() {
 
