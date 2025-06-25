@@ -3,10 +3,10 @@ package com.example.currencyconverter.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.currencyconverter.data.dataSource.remote.RatesService
-import com.example.currencyconverter.data.dataSource.remote.RemoteRatesServiceImpl
 import com.example.currencyconverter.data.dataSource.remote.dto.RateDto
 import com.example.currencyconverter.data.dataSource.room.account.dao.AccountDao
 import com.example.currencyconverter.data.dataSource.room.account.dbo.AccountDbo
+import com.example.currencyconverter.domain.entity.Currencies
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -21,6 +21,8 @@ class CurrenciesViewModel @Inject constructor(
     private val accountDao: AccountDao
 ) : ViewModel() {
 
+    private var updateJob: Job? = null
+
     private val _selectedCurrency = MutableStateFlow("RUB")
     val selectedCurrency: StateFlow<String> = _selectedCurrency.asStateFlow()
 
@@ -33,8 +35,6 @@ class CurrenciesViewModel @Inject constructor(
     private val _rates = MutableStateFlow<List<RateDto>>(emptyList())
     val rates: StateFlow<List<RateDto>> = _rates.asStateFlow()
 
-    private var updateJob: Job? = null
-
     init {
         viewModelScope.launch(Dispatchers.IO) {
             val rubAccount = accountDao.getAll().find { it.code == "RUB" }
@@ -45,9 +45,9 @@ class CurrenciesViewModel @Inject constructor(
         startUpdatingRates()
     }
 
-    fun onCurrencySelected(currency: String) {
-        if (_selectedCurrency.value != currency) {
-            _selectedCurrency.value = currency
+    fun onCurrencySelected(currencyCode: String) {
+        if (_selectedCurrency.value != currencyCode) {
+            _selectedCurrency.value = currencyCode
             _inputAmount.value = 1.0
             _isInputMode.value = false
         }
@@ -63,26 +63,38 @@ class CurrenciesViewModel @Inject constructor(
         _isInputMode.value = false
     }
 
+    fun getAvailableCurrencies(): List<Currencies> = Currencies.values().toList()
+
+    fun onCurrencyClicked(currency: Currencies, onNavigate: () -> Unit) {
+        onCurrencySelected(currency.name)
+        onNavigate()
+    }
+
+    fun getConvertedAmount(currency: Currencies): Double {
+        val currentRates = rates.value
+        return currentRates.find { it.currency == currency.name }?.value ?: 0.0
+    }
+
     fun getRates() {
         viewModelScope.launch(Dispatchers.IO) {
             val baseCurrency = _selectedCurrency.value
             val amount = _inputAmount.value
 
             try {
-                val ratesMap = remoteRatesService.getRates(baseCurrency, amount)
+                val ratesList: List<RateDto> = remoteRatesService.getRates(baseCurrency, amount)
                 val accounts = accountDao.getAll()
-                val accountMap = accounts.associateBy { it.code }
+                val accountMap: Map<String, AccountDbo> = accounts.associateBy { it.code }
 
-                val filteredRates = ratesMap.mapNotNull { (code, value) ->
-                    val balance = accountMap[code]?.amount ?: 0.0
+                val filteredRates = ratesList.mapNotNull { rateDto ->
+                    val balance = accountMap[rateDto.currency]?.amount ?: 0.0
 
                     if (_isInputMode.value) {
-                        val cost = value * amount
+                        val cost = rateDto.value * amount
                         val payerBalance = accountMap[baseCurrency]?.amount ?: 0.0
                         if (payerBalance < cost) return@mapNotNull null
                     }
 
-                    RateDto(currency = code, value = value)
+                    RateDto(currency = rateDto.currency, value = rateDto.value)
                 }.sortedWith(
                     compareByDescending<RateDto> { it.currency == baseCurrency }
                         .thenBy { it.currency }
@@ -103,5 +115,6 @@ class CurrenciesViewModel @Inject constructor(
             }
         }
     }
+
 }
 

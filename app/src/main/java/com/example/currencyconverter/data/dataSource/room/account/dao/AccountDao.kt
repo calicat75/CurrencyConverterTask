@@ -17,4 +17,5 @@ interface AccountDao {
 
     @Query("SELECT * FROM accounts")
     fun getAllAsFlow(): Flow<List<AccountDbo>>
+
 }

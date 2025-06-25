@@ -5,46 +5,48 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.painter.Painter
 import com.example.currencyconverter.R
 
-enum class Currency {
-    USD, GBP, EUR, AUD, BGN, BRL, CAD, CHF, CNY,
-    CZK, DKK, HKD, HRK, HUF, IDR, ILS, INR, ISK,
-    JPY, KRW, MXN, MYR, NOK, NZD, PHP, PLN, RON,
-    RUB, SEK, SGD, THB, TRY, ZAR;
+enum class Currencies {
+    USD, GBP, EUR, RUB, CNY,
+//    AUD, BGN, BRL, CAD, CHF,
+//    CZK, DKK, HKD, HRK, HUF, IDR, ILS, INR, ISK,
+//    JPY, KRW, MXN, MYR, NOK, NZD, PHP, PLN, RON,
+//    SEK, SGD, THB, TRY, ZAR
+    ;
 
     fun toName(): String = when (this) {
-        USD -> "Доллар США"
-        GBP -> "Фунт стерлингов"
-        EUR -> "Евро"
-        AUD -> "Австралийский доллар"
-        BGN -> "Болгарский лев"
-        BRL -> "Бразильский реал"
-        CAD -> "Канадский доллар"
-        CHF -> "Швейцарский франк"
-        CNY -> "Китайский юань"
-        CZK -> "Чешская крона"
-        DKK -> "Датская крона"
-        HKD -> "Гонконгский доллар"
-        HRK -> "Хорватская куна"
-        HUF -> "Венгерский форинт"
-        IDR -> "Индонезийская рупия"
-        ILS -> "Израильский шекель"
-        INR -> "Индийская рупия"
-        ISK -> "Исландская крона"
-        JPY -> "Японская иена"
-        KRW -> "Южнокорейская вона"
-        MXN -> "Мексиканское песо"
-        MYR -> "Малайзийский ринггит"
-        NOK -> "Норвежская крона"
-        NZD -> "Новозеландский доллар"
-        PHP -> "Филиппинское песо"
-        PLN -> "Польский злотый"
-        RON -> "Румынский лей"
-        RUB -> "Российский рубль"
-        SEK -> "Шведская крона"
-        SGD -> "Сингапурский доллар"
-        THB -> "Тайский бат"
-        TRY -> "Турецкая лира"
-        ZAR -> "Южноафриканский ранд"
+        USD -> "United States Dollar"
+        GBP -> "British Pound Sterling"
+        EUR -> "Euro"
+        RUB -> "Russian Ruble"
+        CNY -> "Chinese Yuan"
+// AUD -> "Australian Dollar"
+// BGN -> "Bulgarian Lev"
+// BRL -> "Brazilian Real"
+// CAD -> "Canadian Dollar"
+// CHF -> "Swiss Franc"
+// CZK -> "Czech Koruna"
+// DKK -> "Danish Krone"
+// HKD -> "Hong Kong Dollar"
+// HRK -> "Croatian Kuna"
+// HUF -> "Hungarian Forint"
+// IDR -> "Indonesian Rupiah"
+// ILS -> "Israeli Shekel"
+// INR -> "Indian Rupee"
+// ISK -> "Icelandic Krona"
+// JPY -> "Japanese Yen"
+// KRW -> "South Korean Won"
+// MXN -> "Mexican Peso"
+// MYR -> "Malaysian Ringgit"
+// NOK -> "Norwegian Krone"
+// NZD -> "New Zealand Dollar"
+// PHP -> "Philippine Peso"
+// PLN -> "Polish Zloty"
+// RON -> "Romanian Leu"
+// SEK -> "Swedish Krona"
+// SGD -> "Singapore Dollar"
+// THB -> "Thai Baht"
+// TRY -> "Turkish Lira"
+// ZAR -> "South African Rand"
     }
 
     @Composable
@@ -83,7 +85,7 @@ enum class Currency {
 //        TRY -> painterResource(id = R.drawable.try_flag)
 //        ZAR -> painterResource(id = R.drawable.zar_flag)
         else -> {
-            TODO("not implemented yet")
+            TODO("not yet implemented")
         }
     }
 }
