@@ -18,7 +18,8 @@ import javax.inject.Inject
 @HiltViewModel
 class CurrenciesViewModel @Inject constructor(
     private val remoteRatesService: RatesService,
-    private val accountDao: AccountDao
+    private val accountDao: AccountDao,
+
 ) : ViewModel() {
 
     private var updateJob: Job? = null
@@ -35,12 +36,17 @@ class CurrenciesViewModel @Inject constructor(
     private val _rates = MutableStateFlow<List<RateDto>>(emptyList())
     val rates: StateFlow<List<RateDto>> = _rates.asStateFlow()
 
+    private val _accounts: MutableStateFlow<List<AccountDbo>> = MutableStateFlow<List<AccountDbo>>(emptyList())
+    val accounts: StateFlow<List<AccountDbo>> = _accounts.asStateFlow()
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             val rubAccount = accountDao.getAll().find { it.code == "RUB" }
             if (rubAccount == null) {
                 accountDao.insertAll(AccountDbo("RUB", 75_000.0))
             }
+
+            _accounts.value = accountDao.getAll()
         }
         startUpdatingRates()
     }
@@ -48,14 +54,15 @@ class CurrenciesViewModel @Inject constructor(
     fun onCurrencySelected(currencyCode: String) {
         if (_selectedCurrency.value != currencyCode) {
             _selectedCurrency.value = currencyCode
-            _inputAmount.value = 1.0
-            _isInputMode.value = false
+            resetAmount()
+            startUpdatingRates()
         }
     }
 
     fun onAmountChanged(newAmount: Double) {
         _inputAmount.value = newAmount
         _isInputMode.value = true
+
     }
 
     fun resetAmount() {
@@ -71,37 +78,28 @@ class CurrenciesViewModel @Inject constructor(
     }
 
     fun getConvertedAmount(currency: Currencies): Double {
-        val currentRates = rates.value
-        return currentRates.find { it.currency == currency.name }?.value ?: 0.0
+        val selectedCode = selectedCurrency.value
+        val amount = inputAmount.value
+
+        if (currency.name == selectedCode) return amount
+
+        val rateFromSelected = rates.value.find { it.currency == selectedCode }?.value
+        val rateTo = rates.value.find { it.currency == currency.name }?.value
+
+        return if (rateFromSelected != null && rateTo != null) {
+            amount * (rateTo / rateFromSelected)
+        } else {
+            0.0
+        }
     }
 
     fun getRates() {
         viewModelScope.launch(Dispatchers.IO) {
-            val baseCurrency = _selectedCurrency.value
-            val amount = _inputAmount.value
-
             try {
-                val ratesList: List<RateDto> = remoteRatesService.getRates(baseCurrency, amount)
-                val accounts = accountDao.getAll()
-                val accountMap: Map<String, AccountDbo> = accounts.associateBy { it.code }
-
-                val filteredRates = ratesList.mapNotNull { rateDto ->
-                    val balance = accountMap[rateDto.currency]?.amount ?: 0.0
-
-                    if (_isInputMode.value) {
-                        val cost = rateDto.value * amount
-                        val payerBalance = accountMap[baseCurrency]?.amount ?: 0.0
-                        if (payerBalance < cost) return@mapNotNull null
-                    }
-
-                    RateDto(currency = rateDto.currency, value = rateDto.value)
-                }.sortedWith(
-                    compareByDescending<RateDto> { it.currency == baseCurrency }
-                        .thenBy { it.currency }
-                )
-
-                _rates.emit(filteredRates)
+                val ratesList = remoteRatesService.getRates(_selectedCurrency.value, _inputAmount.value)
+                _rates.value = ratesList.sortedBy { it.currency }
             } catch (e: Exception) {
+                _rates.value = emptyList()
             }
         }
     }
@@ -112,6 +110,7 @@ class CurrenciesViewModel @Inject constructor(
             while (true) {
                 getRates()
                 delay(1000)
+                startUpdatingRates()
             }
         }
     }

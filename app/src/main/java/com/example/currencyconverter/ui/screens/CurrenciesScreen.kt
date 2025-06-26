@@ -30,6 +30,9 @@ fun CurrenciesScreen(
     val selectedCurrencyCode by currenciesViewModel.selectedCurrency.collectAsState()
     val inputAmount by currenciesViewModel.inputAmount.collectAsState()
     val isInputMode by currenciesViewModel.isInputMode.collectAsState()
+    val rates by currenciesViewModel.rates.collectAsState()
+    val accountList by currenciesViewModel.accounts.collectAsState()
+
     val availableCurrencies = currenciesViewModel.getAvailableCurrencies()
 
     Column(
@@ -47,8 +50,13 @@ fun CurrenciesScreen(
                 .padding(bottom = 16.dp),
             textAlign = TextAlign.Center
         )
+        val sortedCurrencies = availableCurrencies.sortedWith(
+            compareByDescending<Currencies> { it.name == selectedCurrencyCode }
+                .thenBy { it.name }
+        )
 
-        availableCurrencies.forEach { currency ->
+        sortedCurrencies.forEach { currency ->
+            val balance = accountList.find { it.code == currency.name }?.amount ?: 0.0
             CurrencyCard(
                 currency = currency,
                 isSelected = selectedCurrencyCode == currency.name,
@@ -56,11 +64,10 @@ fun CurrenciesScreen(
                 isInputMode = isInputMode,
                 onAmountChange = { currenciesViewModel.onAmountChanged(it) },
                 onClick = {
-                    currenciesViewModel.onCurrencyClicked(currency) {
-                        navController.navigate("exchange/${currency.name}")
-                    }
+                    currenciesViewModel.onCurrencySelected(currency.name)
                 },
-                convertedAmount = currenciesViewModel.getConvertedAmount(currency)
+                convertedAmount = rates.find { it.currency == currency.name }?.value ?: 0.0,
+                balance = balance
             )
         }
     }
@@ -74,7 +81,8 @@ fun CurrencyCard(
     isInputMode: Boolean,
     onAmountChange: (Double) -> Unit,
     onClick: () -> Unit,
-    convertedAmount: Double
+    convertedAmount: Double,
+    balance: Double
 ) {
     Card(
         modifier = Modifier
@@ -112,27 +120,40 @@ fun CurrencyCard(
                     fontSize = 14.sp,
                     color = Color(0xFF888888)
                 )
-                Text(
-                    text = "Balance: 100",
-                    fontSize = 14.sp,
-                    color = Color(0xFF888888)
-                )
-            }
-
-            Column(horizontalAlignment = Alignment.End) {
-                if (isSelected && isInputMode) {
-                    OutlinedTextField(
-                        value = inputAmount.toString(),
-                        onValueChange = { value ->
-                            value.toDoubleOrNull()?.let(onAmountChange)
-                        },
-                        modifier = Modifier.width(100.dp),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                if (balance > 0.0) {
+                    Text(
+                        text = "Balance: %.2f".format(balance),
+                        fontSize = 14.sp,
+                        color = Color(0xFF888888)
                     )
+                }
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                if (isSelected) {
+                    if (isInputMode) {
+                        OutlinedTextField(
+                            value = inputAmount.toString(),
+                            onValueChange = { value ->
+                                value.toDoubleOrNull()?.let(onAmountChange)
+                            },
+                            modifier = Modifier.width(100.dp),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            textStyle = LocalTextStyle.current.copy(color = Color.Black)
+                            )
+                    } else {
+                        Text(
+                            text = "${currency.symbol()}${"%.5f".format(inputAmount)}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black,
+                            modifier = Modifier
+                                .clickable { onAmountChange(inputAmount) }
+                        )
+                    }
                 } else {
                     Text(
-                        text = String.format("%.2f", convertedAmount),
+                        text = "${currency.symbol()}${"%.5f".format(convertedAmount)}",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black

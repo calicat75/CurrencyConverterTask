@@ -49,6 +49,15 @@ enum class Currencies {
 // ZAR -> "South African Rand"
     }
 
+    fun symbol(): String = when (this) {
+        Currencies.USD -> "$"
+        Currencies.EUR -> "€"
+        Currencies.GBP -> "£"
+        Currencies.RUB -> "₽"
+        Currencies.CNY -> "¥"
+        else ->    TODO("not yet implemented")
+    }
+
     @Composable
     fun toPainterResource(): Painter = when (this) {
         USD -> painterResource(id = R.drawable.us_flag)
