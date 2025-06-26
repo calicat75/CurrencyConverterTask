@@ -21,6 +21,8 @@ import androidx.navigation.NavController
 import com.example.currencyconverter.domain.entity.Currencies
 import com.example.currencyconverter.ui.viewmodel.CurrenciesViewModel
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.res.painterResource
+import com.example.currencyconverter.R
 
 @Composable
 fun CurrenciesScreen(
@@ -33,7 +35,7 @@ fun CurrenciesScreen(
     val rates by currenciesViewModel.rates.collectAsState()
     val accountList by currenciesViewModel.accounts.collectAsState()
 
-    val availableCurrencies = currenciesViewModel.getAvailableCurrencies()
+    val availableCurrencies = currenciesViewModel.getCurrenciesForDisplay()
 
     Column(
         modifier = Modifier
@@ -67,7 +69,8 @@ fun CurrenciesScreen(
                     currenciesViewModel.onCurrencySelected(currency.name)
                 },
                 convertedAmount = rates.find { it.currency == currency.name }?.value ?: 0.0,
-                balance = balance
+                balance = balance,
+                onResetAmount = { currenciesViewModel.resetAmount() }
             )
         }
     }
@@ -82,7 +85,8 @@ fun CurrencyCard(
     onAmountChange: (Double) -> Unit,
     onClick: () -> Unit,
     convertedAmount: Double,
-    balance: Double
+    balance: Double,
+    onResetAmount: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -141,6 +145,13 @@ fun CurrencyCard(
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             textStyle = LocalTextStyle.current.copy(color = Color.Black)
                             )
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_close),
+                            contentDescription = "Clear amount",
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable { onResetAmount() }
+                        )
                     } else {
                         Text(
                             text = "${currency.symbol()}${"%.5f".format(inputAmount)}",

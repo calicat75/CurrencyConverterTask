@@ -115,5 +115,43 @@ class CurrenciesViewModel @Inject constructor(
         }
     }
 
+    fun getCurrenciesForDisplay(): List<Currencies> {
+        if (!_isInputMode.value) {
+            return getAvailableCurrencies()
+        }
+
+        val selected = _selectedCurrency.value
+        val amountToBuy = _inputAmount.value
+        val selectedRate = rates.value.find { it.currency == selected }?.value ?: 1.0
+        val selectedAccountBalance = _accounts.value.find { it.code == selected }?.amount ?: 0.0
+        val filtered = _accounts.value.filter { account ->
+            val rateForAccountCurrency = rates.value.find { it.currency == account.code }?.value ?: 0.0
+            if (rateForAccountCurrency == 0.0) return@filter false
+            val requiredAmount = amountToBuy * (selectedRate / rateForAccountCurrency)
+            account.amount >= requiredAmount
+        }.map { account -> account.code }
+
+        return getAvailableCurrencies().filter { currency ->
+            currency.name == selected || filtered.contains(currency.name)
+        }
+    }
+
+    fun getFilteredCurrencies(): List<Currencies> {
+        val selectedCode = selectedCurrency.value
+        val amountToBuy = inputAmount.value
+        val currentRates = rates.value.associateBy { it.currency }
+        val accountsMap = accounts.value.associateBy { it.code }
+
+        if (currentRates.isEmpty()) return emptyList()
+        return accounts.value.filter { account ->
+            val rateSelected = currentRates[selectedCode]?.value ?: return@filter false
+            val rateAccount = currentRates[account.code]?.value ?: return@filter false
+            val costInAccountCurrency = amountToBuy * (rateAccount / rateSelected)
+
+            account.amount >= costInAccountCurrency
+        }.mapNotNull { acc ->
+            Currencies.values().find { it.name == acc.code }
+        }
+    }
 }
 
