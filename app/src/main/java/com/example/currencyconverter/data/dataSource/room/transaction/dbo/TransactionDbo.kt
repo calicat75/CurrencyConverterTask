@@ -17,6 +17,7 @@ data class TransactionDbo (
     val from: String,
     @ColumnInfo(name = "currency_code_to")
     val to: String,
+
     @ColumnInfo(name = "amount_from")
     val fromAmount: Double,
     @ColumnInfo(name = "amount_to")

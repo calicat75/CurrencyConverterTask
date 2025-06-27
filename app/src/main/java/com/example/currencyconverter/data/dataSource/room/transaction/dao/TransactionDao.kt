@@ -12,4 +12,5 @@ interface TransactionDao {
 
     @Query("SELECT * FROM transactions")
     suspend fun getAll(): List<TransactionDbo>
+
 }

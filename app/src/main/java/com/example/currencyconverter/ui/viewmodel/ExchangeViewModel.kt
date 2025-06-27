@@ -1,5 +1,6 @@
 package com.example.currencyconverter.ui.viewmodel
 
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.currencyconverter.data.dataSource.room.account.dao.AccountDao
@@ -60,15 +61,13 @@ class ExchangeViewModel @Inject constructor(
         _fromAmount.value = toAmount
     }
 
-    fun performExchange(onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun performExchange(onSuccess: () -> Unit, onError: (String) -> Unit, onTransactionSaved: (() -> Unit)? = null) {
         viewModelScope.launch {
             val accounts = accountDao.getAll().associateBy { it.code }.toMutableMap()
-
             val payerCode = _fromCurrency.value
             val receiverCode = _toCurrency.value
             val amountFrom = _fromAmount.value
             val amountTo = _toAmount.value
-
             val payerBalance = accounts[payerCode]?.amount ?: 0.0
             val receiverBalance = accounts[receiverCode]?.amount ?: 0.0
 
@@ -90,7 +89,7 @@ class ExchangeViewModel @Inject constructor(
                 dateTime = LocalDateTime.now()
             )
             transactionDao.insertAll(transaction)
-
+            onTransactionSaved?.invoke()
             onSuccess()
         }
     }

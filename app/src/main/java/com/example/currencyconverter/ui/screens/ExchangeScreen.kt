@@ -1,5 +1,7 @@
 package com.example.currencyconverter.ui.screens
 
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,16 +21,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.example.currencyconverter.ui.viewmodel.ExchangeViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import com.example.currencyconverter.ui.viewmodel.CurrenciesViewModel
+import com.example.currencyconverter.ui.viewmodel.TransactionsViewModel
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun ExchangeScreen(
+    transactionsViewModel: TransactionsViewModel,
     viewModel: ExchangeViewModel,
     currenciesViewModel: CurrenciesViewModel,
     navController: NavHostController,
@@ -112,51 +117,18 @@ fun ExchangeScreen(
         Button(
             onClick = {
                 viewModel.performExchange(
-                    onSuccess = { navController.popBackStack() },
+                    onSuccess = {
+                        transactionsViewModel.loadTransactions()
+                        navController.navigate("currencies")},
+
                     onError = { errorMessage -> println("Exchange failed: $errorMessage") }
                 )
             },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            modifier = Modifier.align(Alignment.CenterHorizontally).zIndex(Float.MAX_VALUE)
+
         ) {
             Text("Buy")
         }
     }
 }
 
-@Composable
-fun CurrencyExchangeCard(
-    currencyCode: String,
-    amount: Double,
-    onAmountChange: (Double) -> Unit,
-    title: String
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE0F7FA))
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.Start
-        ) {
-            Text(text = title, fontWeight = FontWeight.SemiBold)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = currencyCode,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = if (amount == 0.0) "" else amount.toString(),
-                onValueChange = {
-                    it.toDoubleOrNull()?.let(onAmountChange)
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-    }
-}

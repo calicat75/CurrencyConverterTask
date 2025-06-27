@@ -77,21 +77,6 @@ class CurrenciesViewModel @Inject constructor(
         onNavigate()
     }
 
-    fun getConvertedAmount(currency: Currencies): Double {
-        val selectedCode = selectedCurrency.value
-        val amount = inputAmount.value
-
-        if (currency.name == selectedCode) return amount
-
-        val rateFromSelected = rates.value.find { it.currency == selectedCode }?.value
-        val rateTo = rates.value.find { it.currency == currency.name }?.value
-
-        return if (rateFromSelected != null && rateTo != null) {
-            amount * (rateTo / rateFromSelected)
-        } else {
-            0.0
-        }
-    }
 
     fun getRates() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -123,7 +108,6 @@ class CurrenciesViewModel @Inject constructor(
         val selected = _selectedCurrency.value
         val amountToBuy = _inputAmount.value
         val selectedRate = rates.value.find { it.currency == selected }?.value ?: 1.0
-        val selectedAccountBalance = _accounts.value.find { it.code == selected }?.amount ?: 0.0
         val filtered = _accounts.value.filter { account ->
             val rateForAccountCurrency = rates.value.find { it.currency == account.code }?.value ?: 0.0
             if (rateForAccountCurrency == 0.0) return@filter false
@@ -133,24 +117,6 @@ class CurrenciesViewModel @Inject constructor(
 
         return getAvailableCurrencies().filter { currency ->
             currency.name == selected || filtered.contains(currency.name)
-        }
-    }
-
-    fun getFilteredCurrencies(): List<Currencies> {
-        val selectedCode = selectedCurrency.value
-        val amountToBuy = inputAmount.value
-        val currentRates = rates.value.associateBy { it.currency }
-        val accountsMap = accounts.value.associateBy { it.code }
-
-        if (currentRates.isEmpty()) return emptyList()
-        return accounts.value.filter { account ->
-            val rateSelected = currentRates[selectedCode]?.value ?: return@filter false
-            val rateAccount = currentRates[account.code]?.value ?: return@filter false
-            val costInAccountCurrency = amountToBuy * (rateAccount / rateSelected)
-
-            account.amount >= costInAccountCurrency
-        }.mapNotNull { acc ->
-            Currencies.values().find { it.name == acc.code }
         }
     }
 
