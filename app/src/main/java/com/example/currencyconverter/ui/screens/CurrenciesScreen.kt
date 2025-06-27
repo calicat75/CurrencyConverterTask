@@ -23,10 +23,12 @@ import com.example.currencyconverter.ui.viewmodel.CurrenciesViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.res.painterResource
 import com.example.currencyconverter.R
+import com.example.currencyconverter.ui.viewmodel.ExchangeViewModel
 
 @Composable
 fun CurrenciesScreen(
     currenciesViewModel: CurrenciesViewModel,
+    exchangeViewModel: ExchangeViewModel,
     navController: NavController
 ) {
     val selectedCurrencyCode by currenciesViewModel.selectedCurrency.collectAsState()
@@ -66,7 +68,18 @@ fun CurrenciesScreen(
                 isInputMode = isInputMode,
                 onAmountChange = { currenciesViewModel.onAmountChanged(it) },
                 onClick = {
-                    currenciesViewModel.onCurrencySelected(currency.name)
+                    if (isInputMode && inputAmount > 0) {
+                        val rate = rates.find { it.currency == currency.name }?.value ?: 0.0
+                        exchangeViewModel.setExchangeData(
+                            fromCurrencyCode = selectedCurrencyCode,
+                            toCurrencyCode = currency.name,
+                            rate = rate,
+                            toAmount = inputAmount
+                        )
+                        navController.navigate("exchange/${currency.name}")
+                    } else {
+                        currenciesViewModel.onCurrencySelected(currency.name)
+                    }
                 },
                 convertedAmount = rates.find { it.currency == currency.name }?.value ?: 0.0,
                 balance = balance,

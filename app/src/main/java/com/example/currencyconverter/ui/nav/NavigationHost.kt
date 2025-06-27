@@ -12,6 +12,8 @@ import com.example.currencyconverter.ui.screens.CurrenciesScreen
 import com.example.currencyconverter.ui.screens.TransactionsScreen
 import com.example.currencyconverter.ui.viewmodel.CurrenciesViewModel
 import com.example.currencyconverter.ui.viewmodel.TransactionsViewModel
+import com.example.currencyconverter.ui.viewmodel.ExchangeViewModel
+import com.example.currencyconverter.ui.screens.ExchangeScreen
 
 @Composable
 fun NavigationHost(
@@ -35,7 +37,12 @@ fun NavigationHost(
                 slideOutHorizontally { -1000 }
             }
         ) {
-            CurrenciesScreen(currenciesViewModel = currenciesViewModel, navController = navController)
+            val exchangeViewModel: ExchangeViewModel = hiltViewModel()
+            CurrenciesScreen(
+                currenciesViewModel = currenciesViewModel,
+                exchangeViewModel = exchangeViewModel,
+                navController = navController
+            )
         }
 
         composable(
@@ -48,6 +55,18 @@ fun NavigationHost(
             }
         ) {
             TransactionsScreen(transactionsViewModel = transactionsViewModel, navController = navController)
+        }
+        composable(
+            route = "exchange/{currencyCode}",
+            enterTransition = {
+                slideInHorizontally { 1000 }
+            },
+            exitTransition = {
+                slideOutHorizontally { 1000 }
+            }
+        ) {
+            val exchangeViewModel: ExchangeViewModel = hiltViewModel()
+            ExchangeScreen(viewModel = exchangeViewModel, navController = navController)
         }
     }
 }
