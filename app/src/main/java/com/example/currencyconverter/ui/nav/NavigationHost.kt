@@ -6,8 +6,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.currencyconverter.ui.screens.CurrenciesScreen
 import com.example.currencyconverter.ui.screens.TransactionsScreen
 import com.example.currencyconverter.ui.viewmodel.CurrenciesViewModel
@@ -54,19 +56,37 @@ fun NavigationHost(
                 slideOutHorizontally { -1000 }
             }
         ) {
-            TransactionsScreen(transactionsViewModel = transactionsViewModel, navController = navController)
+            TransactionsScreen(
+                transactionsViewModel = transactionsViewModel,
+                navController = navController
+            )
         }
         composable(
-            route = "exchange/{currencyCode}",
-            enterTransition = {
-                slideInHorizontally { 1000 }
-            },
-            exitTransition = {
-                slideOutHorizontally { 1000 }
-            }
-        ) {
+            route = "exchange?fromCurrency={fromCurrency}&toCurrency={toCurrency}&rate={rate}&toAmount={toAmount}",
+            arguments = listOf(
+                navArgument("fromCurrency") { type = NavType.StringType; defaultValue = "" },
+                navArgument("toCurrency") { type = NavType.StringType; defaultValue = "" },
+                navArgument("rate") { type = NavType.StringType; defaultValue = "0.0" },
+                navArgument("toAmount") { type = NavType.StringType; defaultValue = "0.0" }
+            ),
+            enterTransition = { slideInHorizontally { 1000 } },
+            exitTransition = { slideOutHorizontally { 1000 } }
+        ) { backStackEntry ->
+            val fromCurrency = backStackEntry.arguments?.getString("fromCurrency") ?: ""
+            val toCurrency = backStackEntry.arguments?.getString("toCurrency") ?: ""
+            val rate = backStackEntry.arguments?.getString("rate")?.toDoubleOrNull() ?: 0.0
+            val toAmount = backStackEntry.arguments?.getString("toAmount")?.toDoubleOrNull() ?: 0.0
+
             val exchangeViewModel: ExchangeViewModel = hiltViewModel()
-            ExchangeScreen(viewModel = exchangeViewModel, navController = navController)
+            ExchangeScreen(
+                viewModel = exchangeViewModel,
+                currenciesViewModel = currenciesViewModel,
+                navController = navController,
+                fromCurrencyCode = fromCurrency,
+                toCurrencyCode = toCurrency,
+                rate = rate,
+                toAmount = toAmount
+            )
         }
     }
 }

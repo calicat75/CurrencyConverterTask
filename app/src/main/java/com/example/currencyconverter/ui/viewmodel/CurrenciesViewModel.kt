@@ -153,5 +153,6 @@ class CurrenciesViewModel @Inject constructor(
             Currencies.values().find { it.name == acc.code }
         }
     }
+
 }
 

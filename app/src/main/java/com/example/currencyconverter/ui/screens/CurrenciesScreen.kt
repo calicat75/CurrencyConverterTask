@@ -76,7 +76,9 @@ fun CurrenciesScreen(
                             rate = rate,
                             toAmount = inputAmount
                         )
-                        navController.navigate("exchange/${currency.name}")
+                        navController.navigate(
+                            "exchange?fromCurrency=$selectedCurrencyCode&toCurrency=${currency.name}&rate=$rate&toAmount=$inputAmount"
+                        )
                     } else {
                         currenciesViewModel.onCurrencySelected(currency.name)
                     }
