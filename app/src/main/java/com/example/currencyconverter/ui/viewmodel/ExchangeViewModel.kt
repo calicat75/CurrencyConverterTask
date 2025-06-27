@@ -56,9 +56,8 @@ class ExchangeViewModel @Inject constructor(
         _fromCurrency.value = fromCurrencyCode
         _toCurrency.value = toCurrencyCode
         _exchangeRate.value = rate
-        _toAmount.value = toAmount
-        // рассчитать fromAmount, если нужно, например
-        _fromAmount.value = toAmount / rate
+        _toAmount.value = if (rate != 0.0) toAmount * rate else 0.0
+        _fromAmount.value = toAmount
     }
 
     fun performExchange(onSuccess: () -> Unit, onError: (String) -> Unit) {

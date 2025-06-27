@@ -1,5 +1,6 @@
 package com.example.currencyconverter.ui.nav
 
+import android.util.Log
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
@@ -24,6 +25,7 @@ fun NavigationHost(
 ) {
     val currenciesViewModel: CurrenciesViewModel = hiltViewModel()
     val transactionsViewModel: TransactionsViewModel = hiltViewModel()
+
 
     NavHost(
         navController = navController,
@@ -86,6 +88,7 @@ fun NavigationHost(
                 toCurrencyCode = toCurrency,
                 rate = rate,
                 toAmount = toAmount
+
             )
         }
     }

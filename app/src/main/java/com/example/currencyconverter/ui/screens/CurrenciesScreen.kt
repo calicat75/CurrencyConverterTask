@@ -74,7 +74,7 @@ fun CurrenciesScreen(
                             fromCurrencyCode = selectedCurrencyCode,
                             toCurrencyCode = currency.name,
                             rate = rate,
-                            toAmount = inputAmount
+                            toAmount = inputAmount * rate
                         )
                         navController.navigate(
                             "exchange?fromCurrency=$selectedCurrencyCode&toCurrency=${currency.name}&rate=$rate&toAmount=$inputAmount"
